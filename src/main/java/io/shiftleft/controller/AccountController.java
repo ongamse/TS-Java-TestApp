@@ -53,7 +53,18 @@ public class AccountController {
         return account;
     }
 
-    @PostMapping("/account/{accountId}/withdraw")
+	@PostMapping("/account/{accountId}/withdraw")
+    public Account withdrawFromAccount(@RequestParam double amount, @PathVariable long accountId) {
+        Account account = this.accountRepository.findOne(accountId);
+        if (account == null) {
+            throw new AccountNotFoundException("Account not found with id: " + accountId);
+        }
+        account.withdraw(amount);
+        this.accountRepository.save(account);
+        log.info("Account Data is {}", account.toString());
+        return account;
+    }
+
     public Account withdrawFromAccount(@RequestParam double amount, @PathVariable long accountId) {
         Account account = this.accountRepository.findOne(accountId);
         account.withdraw(amount);
@@ -72,3 +83,4 @@ public class AccountController {
     }
 
 }
+
