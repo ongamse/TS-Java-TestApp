@@ -47,7 +47,15 @@ public class AccountController {
         return this.accountRepository.findOne(accountId);
     }
 
-    @PostMapping("/account/{accountId}/deposit")
+	@PostMapping("/account/{accountId}/deposit")
+    public Account depositIntoAccount(@RequestParam double amount, @PathVariable long accountId) {
+        Account account = this.accountRepository.findOne(accountId);
+        // Removed the log statement
+        account.deposit(amount);
+        this.accountRepository.save(account);
+        return account;
+    }
+
     public Account depositIntoAccount(@RequestParam double amount, @PathVariable long accountId) {
         Account account = this.accountRepository.findOne(accountId);
         log.info("Account Data is {}", account.toString());
@@ -86,5 +94,6 @@ public class AccountController {
     }
 
 }
+
 
 
