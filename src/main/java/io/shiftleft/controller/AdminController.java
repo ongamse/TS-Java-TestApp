@@ -28,14 +28,25 @@ public class AdminController {
   private String fail = "redirect:/";
 
   // helper
-  private boolean isAdmin(String auth)
+	private boolean isAdmin(String auth)
   {
     try {
       ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(auth));
       ObjectInputStream objectInputStream = new ObjectInputStream(bis);
       Object authToken = objectInputStream.readObject();
+      
+      // Check if the object is an instance of AuthToken
+      if(!(authToken instanceof AuthToken)) {
+        throw new ClassNotFoundException("Invalid object type");
+      }
+      
       return ((AuthToken) authToken).isAdmin();
     } catch (Exception ex) {
+      System.out.println(" cookie cannot be deserialized: "+ex.getMessage());
+      return false;
+    }
+  }
+
       System.out.println(" cookie cannot be deserialized: "+ex.getMessage());
       return false;
     }
@@ -135,3 +146,4 @@ public class AdminController {
     return "redirect:/";
   }
 }
+
