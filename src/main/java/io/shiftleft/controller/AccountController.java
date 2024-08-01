@@ -32,11 +32,13 @@ public class AccountController {
     }
 
 	@PostMapping("/account")
-    public Account createAccount(@RequestBody Account account) {
-        this.accountRepository.save(account);
-        log.info("Account Data is not logged due to sensitive information");
-        return account;
-    }
+	public Account createAccount(Account account) {
+		this.accountRepository.save(account);
+		log.info("Account Data is [id={}, type={}, routingNumber=******, accountNumber=******, balance={}, interest={}]", 
+			account.getId(), account.getType(), account.getBalance(), account.getInterest());
+		return account;
+	}
+
 
         return account;
     }
@@ -117,6 +119,7 @@ public class AccountController {
     }
 
 }
+
 
 
 
