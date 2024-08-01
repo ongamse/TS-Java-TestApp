@@ -70,6 +70,21 @@ public class AccountController {
         if (account == null) {
             throw new AccountNotFoundException("Account not found with id: " + accountId);
         }
+        // Check if the amount to withdraw is less than or equal to the account's balance
+        if (amount > account.getBalance()) {
+            throw new IllegalArgumentException("Insufficient funds");
+        }
+        account.withdraw(amount);
+        this.accountRepository.save(account);
+        log.info("Account Data is {}", account.toString());
+        return account;
+    }
+
+    public Account withdrawFromAccount(@RequestParam double amount, @PathVariable long accountId) {
+        Account account = this.accountRepository.findOne(accountId);
+        if (account == null) {
+            throw new AccountNotFoundException("Account not found with id: " + accountId);
+        }
         account.withdraw(amount);
         this.accountRepository.save(account);
         log.info("Account Data is {}", account.toString());
@@ -94,6 +109,7 @@ public class AccountController {
     }
 
 }
+
 
 
 
