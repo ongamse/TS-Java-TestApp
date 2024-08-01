@@ -122,6 +122,30 @@ public class CustomerController {
 		  throw new CustomerNotFoundException();
 	  }
 
+	  // Removed logging of sensitive account information
+
+      try {
+        dispatchEventToSalesForce(String.format(" Customer %s Logged into SalesForce", customer));
+      } catch (Exception e) {
+        log.error("Failed to Dispatch Event to SalesForce . Details {} ", e.getLocalizedMessage());
+
+      }
+
+      return customer;
+    }
+
+	public Customer getCustomer(@PathVariable("customerId") Long customerId) {
+
+		/* validate customer Id parameter */
+      if (null == customerId) {
+        throw new InvalidCustomerRequestException();
+      }
+
+      Customer customer = customerRepository.findOne(customerId);
+		if (null == customer) {
+		  throw new CustomerNotFoundException();
+	  }
+
 	  // Removed logging of sensitive account data
 
       try {
@@ -475,6 +499,7 @@ public class CustomerController {
 	}
 
 }
+
 
 
 
