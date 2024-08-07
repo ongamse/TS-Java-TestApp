@@ -31,10 +31,15 @@ public class AccountController {
         return this.accountRepository.findAll();
     }
 
-    @PostMapping("/account")
-    public Account createAccount(Account account) {
-        this.accountRepository.save(account);
-        log.info("Account Data is {}", account.toString());
+	@PostMapping("/account")
+	public Account createAccount(Account account) {
+		this.accountRepository.save(account);
+		log.info("Account Data is [id={}, type={}, routingNumber=******, accountNumber=******, balance={}, interest={}]", 
+			account.getId(), account.getType(), account.getBalance(), account.getInterest());
+		return account;
+	}
+
+
         return account;
     }
 
@@ -44,7 +49,23 @@ public class AccountController {
         return this.accountRepository.findOne(accountId);
     }
 
-    @PostMapping("/account/{accountId}/deposit")
+	@PostMapping("/account/{accountId}/deposit")
+    public Account depositIntoAccount(@RequestParam double amount, @PathVariable long accountId) {
+        Account account = this.accountRepository.findOne(accountId);
+        // Removed logging of sensitive data
+        account.deposit(amount);
+        this.accountRepository.save(account);
+        return account;
+    }
+
+    public Account depositIntoAccount(@RequestParam double amount, @PathVariable long accountId) {
+        Account account = this.accountRepository.findOne(accountId);
+        // Removed the log statement
+        account.deposit(amount);
+        this.accountRepository.save(account);
+        return account;
+    }
+
     public Account depositIntoAccount(@RequestParam double amount, @PathVariable long accountId) {
         Account account = this.accountRepository.findOne(accountId);
         log.info("Account Data is {}", account.toString());
@@ -53,7 +74,33 @@ public class AccountController {
         return account;
     }
 
-    @PostMapping("/account/{accountId}/withdraw")
+	@PostMapping("/account/{accountId}/withdraw")
+    public Account withdrawFromAccount(@RequestParam double amount, @PathVariable long accountId) {
+        Account account = this.accountRepository.findOne(accountId);
+        if (account == null) {
+            throw new AccountNotFoundException("Account not found with id: " + accountId);
+        }
+        // Check if the amount to withdraw is less than or equal to the account's balance
+        if (amount > account.getBalance()) {
+            throw new IllegalArgumentException("Insufficient funds");
+        }
+        account.withdraw(amount);
+        this.accountRepository.save(account);
+        log.info("Account Data is {}", account.toString());
+        return account;
+    }
+
+    public Account withdrawFromAccount(@RequestParam double amount, @PathVariable long accountId) {
+        Account account = this.accountRepository.findOne(accountId);
+        if (account == null) {
+            throw new AccountNotFoundException("Account not found with id: " + accountId);
+        }
+        account.withdraw(amount);
+        this.accountRepository.save(account);
+        log.info("Account Data is {}", account.toString());
+        return account;
+    }
+
     public Account withdrawFromAccount(@RequestParam double amount, @PathVariable long accountId) {
         Account account = this.accountRepository.findOne(accountId);
         account.withdraw(amount);
@@ -72,3 +119,9 @@ public class AccountController {
     }
 
 }
+
+
+
+
+
+

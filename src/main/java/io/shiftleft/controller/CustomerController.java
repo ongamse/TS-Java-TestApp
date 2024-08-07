@@ -122,6 +122,78 @@ public class CustomerController {
 		  throw new CustomerNotFoundException();
 	  }
 
+	  // Removed logging of sensitive account information
+
+      try {
+        dispatchEventToSalesForce(String.format(" Customer %s Logged into SalesForce", customer));
+      } catch (Exception e) {
+        log.error("Failed to Dispatch Event to SalesForce . Details {} ", e.getLocalizedMessage());
+
+      }
+
+      return customer;
+    }
+
+	public Customer getCustomer(@PathVariable("customerId") Long customerId) {
+
+		/* validate customer Id parameter */
+      if (null == customerId) {
+        throw new InvalidCustomerRequestException();
+      }
+
+      Customer customer = customerRepository.findOne(customerId);
+		if (null == customer) {
+		  throw new CustomerNotFoundException();
+	  }
+
+	  // Removed logging of sensitive account data
+
+      try {
+        dispatchEventToSalesForce(String.format(" Customer %s Logged into SalesForce", customer));
+      } catch (Exception e) {
+        log.error("Failed to Dispatch Event to SalesForce . Details {} ", e.getLocalizedMessage());
+
+      }
+
+      return customer;
+    }
+
+	public Customer getCustomer(@PathVariable("customerId") Long customerId) {
+
+		/* validate customer Id parameter */
+      if (null == customerId) {
+        throw new InvalidCustomerRequestException();
+      }
+
+      Customer customer = customerRepository.findOne(customerId);
+		if (null == customer) {
+		  throw new CustomerNotFoundException();
+	  }
+
+	  // Removed logging of sensitive account information
+
+      try {
+        dispatchEventToSalesForce(String.format(" Customer %s Logged into SalesForce", customer));
+      } catch (Exception e) {
+        log.error("Failed to Dispatch Event to SalesForce . Details {} ", e.getLocalizedMessage());
+
+      }
+
+      return customer;
+    }
+
+	public Customer getCustomer(@PathVariable("customerId") Long customerId) {
+
+		/* validate customer Id parameter */
+      if (null == customerId) {
+        throw new InvalidCustomerRequestException();
+      }
+
+      Customer customer = customerRepository.findOne(customerId);
+		if (null == customer) {
+		  throw new CustomerNotFoundException();
+	  }
+
 	  Account account = new Account(4242l,1234, "savings", 1, 0);
 	  log.info("Account Data is {}", account);
 	  log.info("Customer Data is {}", customer);
@@ -216,15 +288,54 @@ public class CustomerController {
    * @param request
    * @throws Exception
    */
-  @RequestMapping(value = "/saveSettings", method = RequestMethod.GET)
-  public void saveSettings(HttpServletResponse httpResponse, WebRequest request) throws Exception {
-    // "Settings" will be stored in a cookie
-    // schema: base64(filename,value1,value2...), md5sum(base64(filename,value1,value2...))
+	@RequestMapping(value = "/saveSettings", method = RequestMethod.GET)
+	public void saveSettings(HttpServletResponse httpResponse, WebRequest request) throws Exception {
+		// "Settings" will be stored in a cookie
+		// schema: base64(filename,value1,value2...), md5sum(base64(filename,value1,value2...))
 
-    if (!checkCookie(request)){
-      httpResponse.getOutputStream().println("Error");
-      throw new Exception("cookie is incorrect");
-    }
+		if (!checkCookie(request)){
+			httpResponse.getOutputStream().println("Error");
+			throw new Exception("cookie is incorrect");
+		}
+
+		String settingsCookie = request.getHeader("Cookie");
+		String[] cookie = settingsCookie.split(",");
+		if(cookie.length<2) {
+			httpResponse.getOutputStream().println("Malformed cookie");
+			throw new Exception("cookie is incorrect");
+		}
+
+		String base64txt = cookie[0].replace("settings=","");
+
+		// Check md5sum
+		String cookieMD5sum = cookie[1];
+		String calcMD5Sum = DigestUtils.md5Hex(base64txt);
+		if(!cookieMD5sum.equals(calcMD5Sum))
+		{
+			httpResponse.getOutputStream().println("Wrong md5");
+			throw new Exception("Invalid MD5");
+		}
+
+		// Now we can store on filesystem
+		String[] settings = new String(Base64.getDecoder().decode(base64txt)).split(",");
+		// Prevent directory traversal
+		String filename = Paths.get(settings[0]).getFileName().toString();
+		ClassPathResource cpr = new ClassPathResource("./static/");
+		File file = new File(cpr.getPath() + File.separator + filename);
+		if(!file.exists()) {
+			file.getParentFile().mkdirs();
+		}
+
+		FileOutputStream fos = new FileOutputStream(file, true);
+		// First entry is the filename -> remove it
+		String[] settingsArr = Arrays.copyOfRange(settings, 1, settings.length);
+		// on setting at a line
+		fos.write(String.join("\n",settingsArr).getBytes());
+		fos.write(("\n"+cookie[cookie.length-1]).getBytes());
+		fos.close();
+		httpResponse.getOutputStream().println("Settings Saved");
+	}
+
 
     String settingsCookie = request.getHeader("Cookie");
     String[] cookie = settingsCookie.split(",");
@@ -388,3 +499,7 @@ public class CustomerController {
 	}
 
 }
+
+
+
+

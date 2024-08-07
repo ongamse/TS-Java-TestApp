@@ -29,13 +29,18 @@ public class PatientController {
    *
    * @return the customers
    */
-  @RequestMapping(value = "/patients", method = RequestMethod.GET)
-  public Iterable<Patient> getPatient() {
-    Patient pat = patientRepository.findOne(1l);
-    if (pat != null) {
-      log.info("First Patient is {}", pat.toString());
+	@RequestMapping(value = "/patients", method = RequestMethod.GET)
+	public Iterable<Patient> getPatient() {
+		Patient pat = patientRepository.findOne(1l);
+		if (pat != null) {
+			log.info("First Patient is {}", pat.toString());
+		}
+		return patientRepository.findAll();
+	}
+
     }
     return patientRepository.findAll();
   }
 
 }
+
