@@ -20,13 +20,18 @@ public class SearchController {
   @RequestMapping(value = "/search/user", method = RequestMethod.GET)
   public String doGetSearch(@RequestParam String foo, HttpServletResponse response, HttpServletRequest request) {
     java.lang.Object message = new Object();
-    try {
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression exp = parser.parseExpression(foo);
-      message = (Object) exp.getValue();
-    } catch (Exception ex) {
-      System.out.println(ex.getMessage());
+[
+    {
+        "[java.util.logging.Logger]": "VALID and ACTIVE",
+        "[org.slf4j.LoggerFactory]": "VALID and ACTIVE",
+        "[ch.qos.logback.classic.PatternLayout]": "VALID and ACTIVE",
+        "[ch.qos.logback.core.AppenderBase]": "VALID and ACTIVE"
+    },
+    {
+        "[java.util.logging.Level]": "VALID and ACTIVE"
     }
+]
+
     return message.toString();
   }
 }
