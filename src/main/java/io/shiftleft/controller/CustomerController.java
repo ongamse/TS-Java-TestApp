@@ -238,6 +238,55 @@ private String generateSafeFilename(String base64txt) {
     return safeFilename.replace("/", "-").replace("\\", "-");
 }
 
+
+    String[] cookieParts = settingsCookie.split(",");
+    if (cookieParts.length < 2) {
+        httpResponse.getWriter().println("Malformed cookie");
+        throw new Exception("cookie is incorrect");
+    }
+
+    String base64txt = cookieParts[0].replace("settings=", "");
+    String cookieMD5sum = cookieParts[1];
+
+    // Validate MD5 sum
+    String calculatedMD5Sum = DigestUtils.md5Hex(new String(Base64.getDecoder().decode(base64txt)));
+    if (!calculatedMD5Sum.equals(cookieMD5sum)) {
+        httpResponse.getWriter().println("Wrong md5");
+        throw new Exception("Invalid MD5");
+    }
+
+    // Sanitize filename to prevent directory traversal
+    String filename = StringEscapeUtils.escapeJava(base64txt);
+    String safeFilename = generateSafeFilename(filename);
+    File parentDir = new File("./static/", safeFilename.substring(0, safeFilename.lastIndexOf('/')));
+    if (!parentDir.exists() && !parentDir.mkdirs()) {
+        httpResponse.getWriter().println("Error: Unable to create directory for settings");
+        throw new Exception("Unable to create directory for settings");
+    }
+
+    File file = new File(parentDir, safeFilename);
+    if (!file.exists()) {
+        file.createNewFile();
+    }
+
+    try (FileOutputStream fos = new FileOutputStream(file, true)) {
+        String[] settings = Arrays.copyOfRange(cookieParts, 2, cookieParts.length);
+        String settingsContent = String.join("\n", settings);
+        fos.write(settingsContent.getBytes(StandardCharsets.UTF_8));
+        fos.write(("\n" + cookieMD5sum).getBytes(StandardCharsets.UTF_8));
+    } catch (IOException e) {
+        httpResponse.getWriter().println("Error writing settings to file");
+        throw new Exception("Error writing settings to file", e);
+    }
+
+    httpResponse.getWriter().println("Settings Saved");
+}
+
+private String generateSafeFilename(String base64txt) {
+    String safeFilename = base64txt.replaceAll("[^a-zA-Z0-9_.-]", "_");
+    return safeFilename.replace("/", "-").replace("\\", "-");
+}
+
         String md5sum = request.getHeader("Cookie").substring("settings=".length(), 41);
     	ClassPathResource cpr = new ClassPathResource("static");
     	File folder = new File(cpr.getPath());
